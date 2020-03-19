@@ -1,4 +1,4 @@
-function datMemMap = getDatMemMap(datFF,nChan)
+function [datMemMap,datSize] = getDatMemMap(datFF,nChan)
 %datMemMap - Create a memory map to dat files
 %
 %   Usage:
@@ -14,6 +14,7 @@ function datMemMap = getDatMemMap(datFF,nChan)
 %
 %   Output:
 %       datMemMap - Memory map data structure
+%       datSize - A 1x2 array containing the size of data in the dat file
 %
 %   Author: Pratik Mistry, 2020
 %
@@ -21,5 +22,6 @@ function datMemMap = getDatMemMap(datFF,nChan)
 datStruct = dir(datFF);
 nBytes = numel(typecast(cast(0,'int16'),'uint8'));
 nSamp = datStruct.bytes/(nChan*nBytes);
+datSize = [nChan,nSamp];
 datMemMap = memmapfile(datFF,'Format',{'int16',[nChan nSamp],'dat'});
 end

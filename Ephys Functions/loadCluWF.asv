@@ -14,11 +14,10 @@ function WF = loadCluWF(clusters,datFF,nChan,Fs,varargin)
 %       datPath - A string containing the full path to the dat file
 %       nChan - Number of channels in the recording
 %       Fs - Sampling rate of acquisition
-%       params (optional) - A structure containing information on the
-%       window for the waveforms in ms and number of waveforms to read
 %
 %   Output:
-%       WF - A structure containing information about waveforms associated with the input clusters 
+%       WF - A structure containing information about waveforms associated
+%with the 
 %
 % Author: Pratik Mistry, 2020
 

@@ -40,7 +40,7 @@ chanPos = readNPY(fullfile(phyPath,'channel_positions.npy')); %load xcoords, yco
 if exist(fullfile(phyPath,'channel_shanks.npy'),'file')
     kcoords = readNPY(fullfile(phyPath,'channel_shanks.npy')); %load kcoords
 else
-    error('Could not load kcoords');
+    fprintf('Could not load kcoords\n');
 end
 
 goodCluID = getGoodClusters(phyPath); %Call a function to pull cluster ids that were labeled good

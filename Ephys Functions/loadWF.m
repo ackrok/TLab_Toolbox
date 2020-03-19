@@ -1,4 +1,4 @@
-function data = loadWF(data,datPath,varargin)
+function data = loadWF(data,datFF,varargin)
 %LoadWF - Load waveforms
 %
 %   data = loadWF(data,datPath);
@@ -21,9 +21,8 @@ function data = loadWF(data,datPath,varargin)
 
 %
 % Pull General Information
-Fs = data.acq.Fs;
-datName = data.acq.datName;
-nChan = data.acq.nChan;
+Fs = data.gen.Fs;
+nChan = data.gen.nChan;
 
 % Pull WF params
 switch nargin
@@ -38,11 +37,8 @@ wfTime = wfWin(1):wfWin(2); wfTime = (wfTime'/Fs)*1000;
 wfDur = length(wfTime);
 
 % Create Memory Map to Dat File
-datFF = fullfile(datPath,datName);
-datStruct = dir(datFF);
-nBytes = numel(typecast(cast(0,'int16'),'uint8'));
-nSamp = datStruct.bytes/(nChan*nBytes);
-dataMap = memmapfile(datFF, 'Format', {'int16', [nChan nSamp], 'dat'});
+dataMap = getDatMemMap(datFF,nChan);
+nSamp = dataMap.Format{2}(2);
 
 clusters = data.clusters;
 nClu = length(clusters);

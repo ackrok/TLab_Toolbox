@@ -7,6 +7,10 @@ Currently, the toolbox contains functions for data organization, data visualizat
 
 DISCLAIMER: These functions are not perfect, and they get edited to add upgrades, etc.
 
+CURRENT COLLABORATORS:
+Pratik Mistry
+Anne Krok
+
 ISSUES: 
 Please contact: 
 

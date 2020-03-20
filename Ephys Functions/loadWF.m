@@ -1,8 +1,8 @@
-function data = loadWF(data,datFF,varargin)
+function WF = loadWF(data,datPath,varargin)
 %LoadWF - Load waveforms
 %
-%   data = loadWF(data,datPath);
-%   data = loadWF(data,datPath,params);
+%   WF = loadWF(data,datPath);
+%   WF = loadWF(data,datPath,params);
 %
 %   Description: This code utilizes organized cluster data (with max channel
 %   information) to pull the mean waveforms of all the spikes from the raw
@@ -15,14 +15,16 @@ function data = loadWF(data,datFF,varargin)
 %   - params (optional) - A structure containing parameters necessary for analysis
 %
 %   Output:
-%   - data - Updated data structure containing waveform information
+%   - WF - structure containing waveform information
 %
-% Author: Pratik Mistry, 2020
+% Author: Pratik Mistry, Tritsch Lab, 2020
+% Updated: Anya Krok, 2020
 
 %
 % Pull General Information
-Fs = data.gen.Fs;
-nChan = data.gen.nChan;
+Fs = data.acq.Fs;
+datName = data.acq.datName;
+nChan = data.acq.nChan;
 
 % Pull WF params
 switch nargin
@@ -32,13 +34,18 @@ switch nargin
         wfWin = [-3 3]; % Default: read waveform 3s before and after spike 
         nWF = 100; % Default: read 100 random waveforms 
 end
+
+%%
 wfWin = ceil((wfWin/1000)*Fs);
 wfTime = wfWin(1):wfWin(2); wfTime = (wfTime'/Fs)*1000;
 wfDur = length(wfTime);
 
 % Create Memory Map to Dat File
-dataMap = getDatMemMap(datFF,nChan);
-nSamp = dataMap.Format{2}(2);
+datFF = fullfile(datPath,datName);
+datStruct = dir(datFF);
+nBytes = numel(typecast(cast(0,'int16'),'uint8'));
+nSamp = datStruct.bytes/(nChan*nBytes);
+dataMap = memmapfile(datFF, 'Format', {'int16', [nChan nSamp], 'dat'});
 
 clusters = data.clusters;
 nClu = length(clusters);
@@ -49,6 +56,7 @@ WF(1:nClu) = struct('top',zeros(wfDur,nWF),'topMu',zeros(wfDur,1),'topSem',zeros
 %creates a vector containing random integers selected from 1 -> # of spikes
 %to pull the individual waveforms.
 tic
+h = waitbar(0,'Loading Waveforms from DAT File');
 for n = 1:nClu
     clustID = clusters(n).clusterID; % Pull the cluster ID
     tmpST = clusters(n).spikeTimes; % Pull the spike times from that cluster
@@ -69,13 +77,13 @@ for n = 1:nClu
         end
         tmpWF(m,:) = double(dataMap.Data.dat(maxChan,[ind1:ind2])); %Store waveforms in temp matrix
     end
-    WF(n).top = tmpWF(randInd,:); %Extract random waveform
-    WF(n).topMu = mean(tmpWF,1); %Extract mean waveform from all spikes
-    WF(n).topSem = SEM(tmpWF,1); %Extract standard error of mean from all spikes
+    WF(n).top = tmpWF(randInd,:); WF(n).top = WF(n).top';%Extract random waveform
+    WF(n).topMu = mean(tmpWF,1); WF(n).topMu = WF(n).topMu(:); %Extract mean waveform from all spikes
+    WF(n).topSem = SEM(tmpWF,1); WF(n).topSem = WF(n).topSem(:); %Extract standard error of mean from all spikes
     WF(n).time = wfTime;
-    fprintf('Loaded Waveform for Cluster %d.... Completed %d out of %d\n',clustID,n,nClu);
+    waitbar(n/nClu,h);
+    %fprintf('Loaded Waveform for Cluster %d.... Completed %d out of %d\n',clustID,n,nClu);
 end
-disp('Finished Loading Waveforms!');
-data.WF = WF;
+disp('Finished Loading Waveforms!'); close(h);
 toc
 end
